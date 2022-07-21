@@ -1,0 +1,16 @@
+{
+  "name": "query-token-price-tool",
+  "version": "1.0.0",
+  "description": "Query crypto token prices with use of a local, in-memory cache.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "CryptoMaxPlanck",
+  "type": "module",
+  "license": "ISC",
+  "dependencies": {
+    "node-cache": "^5.1.2",
+    "node-fetch": "^3.2.9"
+  }
+}
