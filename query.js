@@ -1,25 +1,35 @@
-// const NodeCache = require('node-cache');
 import fetch from "node-fetch";
-import cache from "./cache.js";
+import NodeCache from "node-cache";
+
+const cache = new NodeCache({ stdTTL: 3600, checkperiod: 600 });
 
 let chainNames = {};
 
+// Update the Object connecting chainId's to their gecko_id
 async function updateChainNamesQuery() {
-  await fetch("https://api.llama.fi/chains")
-    .then((res) => res.json())
-    .then((data) => {
-      Object.entries(data).forEach((entry) => {
-        const [_, chainElement] = entry;
-        if (chainElement["gecko_id"] && chainElement["chainId"]) {
-          chainNames[chainElement["chainId"]] = chainElement["gecko_id"];
-        }
+  try {
+    await fetch("https://api.llama.fi/chains")
+      .then((res) => res.json())
+      .then((data) => {
+        Object.entries(data).forEach((entry) => {
+          const [_, chainElement] = entry;
+          if (chainElement["gecko_id"] && chainElement["chainId"]) {
+            chainNames[chainElement["chainId"]] = chainElement["gecko_id"];
+          }
+        });
       });
-    });
+  } catch (error) {
+    throw new Error(`Error updating chain names: ${error}`);
+  }
 }
 
 // Convert a date from Y-m-d format to unix timestamp
 function dateToUnixTimestamp(date) {
-  return new Date(date).getTime() / 1000;
+  try {
+    return new Date(date).getTime() / 1000;
+  } catch (error) {
+    throw new Error(`Invalid date: ${date}: ${error}`);
+  }
 }
 
 /**
@@ -42,42 +52,26 @@ export async function getTokenPrice(
   const timestamp = dateToUnixTimestamp(date);
   const key = `${chainId}-${tokenAddress}-${timestamp}`;
   if (cache.has(key)) {
-    console.log("cached");
     return cache.get(key);
   }
   const query_string = JSON.stringify({
     coins: [`${chainNames[chainId]}:${tokenAddress}`],
     timestamp: timestamp,
   });
-  const tokenPrice = await fetch("https://coins.llama.fi/prices", {
-    method: "post",
-    body: query_string,
-    headers: { "Content-Type": "application/json" },
-  })
-    .then((res) => res.json())
-    .then(
-      (data) => data["coins"][`${chainNames[chainId]}:${tokenAddress}`]["price"]
-    );
-  cache.set(key, tokenPrice);
-//   if (cache.has(key)) {
-//     console.log("cached");
-//     return cache.get(key);
-//   }
-  return tokenPrice;
+  try {
+    const tokenPrice = await fetch("https://coins.llama.fi/prices", {
+      method: "post",
+      body: query_string,
+      headers: { "Content-Type": "application/json" },
+    })
+      .then((res) => res.json())
+      .then(
+        (data) =>
+          data["coins"][`${chainNames[chainId]}:${tokenAddress}`]["price"]
+      );
+    cache.set(key, tokenPrice);
+    return tokenPrice;
+  } catch (error) {
+    throw new Error(error);
+  }
 }
-
-console.log(
-  await getTokenPrice(
-    "1",
-    "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-    "2022-07-20"
-  )
-);
-console.log(
-    await getTokenPrice(
-        "1",
-        "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-        "2022-07-20"
-      )
-)
-// await getTokenPrice("1", "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", "2022-07-20");
