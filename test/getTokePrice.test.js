@@ -227,8 +227,7 @@ const tokensToTest = {
     "0xf5f3650f54da85e4a4d8e490139c77275b167c53",
   ],
 };
-// Object.keys(tokensToTest).forEach((chain) => {
-  const chain = "1666600000";
+Object.keys(tokensToTest).forEach((chain) => {
   describe("Testing chain: " + chain, async () => {
     tokensToTest[parseInt(chain)].forEach((token) => {
       it(`should return the correct price for ${token}`, async () => {
@@ -238,13 +237,11 @@ const tokensToTest = {
             MISSING_TOKENS_MAP[token],
             dateToQuery
           );
-          console.log("MISSING ", price);
           expect(price).to.be.a("number");
         }
         const price = await getTokenPrice(parseInt(chain), token, dateToQuery);
-        console.log(price);
         expect(price).to.be.a("number");
       });
     });
   });
-// });
+});

@@ -109,23 +109,13 @@ export async function getTokenPrice(chainId, tokenAddress, date) {
         `https://api.coingecko.com/api/v3/coins/${coinGeckoQuery}`
       );
       const dataCoinGecko = await responseCoinGecko.json();
-      console.log("GECKOING");
       const tokenPriceCoinGecko = (await dataCoinGecko)["market_data"][
         "current_price"
       ]["usd"];
       cache.set(key, await tokenPriceCoinGecko);
-      console.log("successful gecko");
       return await tokenPriceCoinGecko;
     } catch (coinGeckoError) {
       throw new Error(`Getting errors ${error} and ${coinGeckoError}`);
     }
   }
 }
-
-// console.log(
-//   await getTokenPrice(
-//     8217,
-//     "0xcd6f29dc9ca217d0973d3d21bf58edd3ca871a86",
-//     "2022-07-07"
-//   )
-// );
