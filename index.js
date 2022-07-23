@@ -1,1 +1,3 @@
-export { getTokenPrice } from "./query";
+import { getTokenPrice } from "./query.js";
+
+export default getTokenPrice;
